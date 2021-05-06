@@ -1,6 +1,6 @@
 # Power To Admins
 
-This project is made to give salesforce administrators a GUI to easily use git and sfdx-cli tools in their workflow.
+Simple GUI to help Salesforce admins and developers to use git and sfdx cli tools without using the terminal.
 
 ## Badges
 
