@@ -1,6 +1,11 @@
 {
     "plugins": ["inclusive-language"],
     "extends": ["@salesforce/eslint-config-lwc/recommended"],
+    "ecmaFeatures": {
+        "modules": true,
+         "templateStrings": true
+    },
+    "parser": "babel",
     "rules": {
         "@lwc/lwc/no-async-operation": "off",
         "@lwc/lwc/no-inner-html": "warn",

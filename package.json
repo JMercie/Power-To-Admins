@@ -4,6 +4,7 @@
     "version": "0.0.1",
     "author": "JMercie",
     "bugs": "https://github.com/JMercie/power-to-admins/issues",
+    "type": "module",
     "dependencies": {
         "compression": "^1.7.4",
         "express": "^4.17.1",
