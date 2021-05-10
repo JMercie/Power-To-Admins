@@ -1,24 +1,34 @@
-import * as fs from 'fs/promises';
-import * as os from 'os';
-import * as childProcess from 'child_process';
-import * as path from 'path';
+import os from 'os';
+import { exec, execSync } from 'child_process';
+import path, { dirname } from 'path';
 
 /**
  * @description -> This function is use to create a directory in the users home and initialize a
- * git repository on it.
+ * git repository on it plus create a sfdx project from scratch.
  * @param {String} name -> Name of the directory the user is creating.
+ * @param {String} result ->  success message.
  */
-const initNewRepo = async (name) => {
+export const initNewRepo = async (projectName, directory) => {
   try {
-    const initDir = await fs.mkdir(`${os.homedir()}/${name}`, {
-      recursive: true
-    });
+    const targetDir = directory ? directory : os.homedir();
 
-    await childProcess.exec('git init', {
-      cwd: initDir
+    execSync(`sfdx force:project:create -t standard -x -n ${projectName}`, {
+      cwd: targetDir
     });
+    execSync(
+      'git init',
+      {
+        cwd: `${targetDir}/${projectName}`
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          return;
+        }
+      }
+    );
 
-    console.log(`succesfully create git repository at path: ${initDir}`);
+    return `successfully create git repository at path: ${directory}/${projectName}`;
   } catch (error) {
     console.error(error);
   }
@@ -30,36 +40,50 @@ const initNewRepo = async (name) => {
  * @param {String} name -> name of the directory where you want to find git repositories.
  * @returns {String[]} output -> list of paths that fullfil search criteria
  */
-const openExistingRepo = async (name) => {
+export const openExistingSFDXProject = async (name) => {
   const dirName = name ? name : os.homedir(); // TODO : sanitize user input to avoid weird system injections or invalid paths
-  let gitPaths = [];
-
-  const getGitRepos = childProcess.execSync(
-    `find ${dirName} -name ".git"`,
+  let output = [];
+  // here we look for folders that contains a file with name: sfdx-project.json. Because is mandatory for every local sfdx project.
+  const matches = execSync(
+    `find ${dirName} -name "sfdx-project.json"`,
     (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
       }
     }
-  );
-  gitPaths = getGitRepos.toString().split('\n');
+  )
+    .toString()
+    .split('\n');
 
-  //TODO : find how to search for every sfdx project.
-  gitPaths.forEach((path) => {
-    console.log(
-      childProcess
-        .execSync(`find ${path} -name "force-app"`, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`exec error: ${error}`);
-            return;
-          }
-        })
-        .toString()
-    );
+  matches.pop(); // this will remove the last array item, which is a empty string.
+
+  matches.forEach((data) => {
+    output.push(path.posix.dirname(data));
   });
 
-  return gitPaths;
+  return output.length > 0
+    ? output
+    : 'there is no SFDX projects in your machine, try create a new one!';
 };
 
-openExistingRepo();
+/**
+ * @description cloneRepo handle the succesfull clone of a git remote repository. Currently just work for public repositories.
+ * @return {Boolean} Returns true if operation succeed, false otherwise.
+ */
+export const cloneRepo = async (repoName, directory) => {
+  execSync(
+    `git clone ${repoName}`,
+    {
+      cwd: directory ? directory : os.homedir()
+    },
+    (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return false;
+      }
+    }
+  );
+
+  return true;
+};
