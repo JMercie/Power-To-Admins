@@ -12,15 +12,12 @@ export const initNewRepo = async (projectName, directory) => {
   try {
     const targetDir = directory ? directory : os.homedir();
 
-    const sfProjectDir = exec(
-      `sfdx force:project:create -t standard -x -n ${projectName}`,
-      {
-        cwd: targetDir,
-        shell: true
-      }
-    );
+    exec(`sfdx force:project:create -t standard -x -n ${projectName}`, {
+      cwd: targetDir,
+      shell: true
+    });
 
-    const initGitDir = exec(
+    exec(
       'git init',
       {
         cwd: `${targetDir}/${projectName}`,
