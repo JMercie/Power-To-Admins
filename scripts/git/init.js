@@ -1,6 +1,6 @@
 import os from 'os';
 import { exec, execSync } from 'child_process';
-import path, { dirname } from 'path';
+import { dirname } from 'path';
 
 /**
  * @description -> This function is use to create a directory in the users home and initialize a
@@ -12,19 +12,26 @@ export const initNewRepo = async (projectName, directory) => {
   try {
     const targetDir = directory ? directory : os.homedir();
 
-    execSync(`sfdx force:project:create -t standard -x -n ${projectName}`, {
-      cwd: targetDir
-    });
-    execSync(
+    const sfProjectDir = exec(
+      `sfdx force:project:create -t standard -x -n ${projectName}`,
+      {
+        cwd: targetDir,
+        shell: true
+      }
+    );
+
+    const initGitDir = exec(
       'git init',
       {
-        cwd: `${targetDir}/${projectName}`
+        cwd: `${targetDir}/${projectName}`,
+        shell: true
       },
       (error, stdout, stderr) => {
         if (error) {
-          console.error(`exec error: ${error}`);
+          console.error(`exec error: ${stderr}`);
           return;
         }
+        return stdout;
       }
     );
 
@@ -41,8 +48,9 @@ export const initNewRepo = async (projectName, directory) => {
  * @returns {String[]} output -> list of paths that fullfil search criteria
  */
 export const openExistingSFDXProject = async (name) => {
-  const dirName = name ? name : os.homedir(); // TODO : sanitize user input to avoid weird system injections or invalid paths
+  name ??= os.homedir();
   let output = [];
+
   // here we look for folders that contains a file with name: sfdx-project.json. Because is mandatory for every local sfdx project.
   const matches = execSync(
     `find ${dirName} -name "sfdx-project.json"`,
@@ -55,7 +63,6 @@ export const openExistingSFDXProject = async (name) => {
   )
     .toString()
     .split('\n');
-
   matches.pop(); // this will remove the last array item, which is a empty string.
 
   matches.forEach((data) => {
@@ -75,7 +82,8 @@ export const cloneRepo = async (repoName, directory) => {
   execSync(
     `git clone ${repoName}`,
     {
-      cwd: directory ? directory : os.homedir()
+      cwd: directory ? directory : os.homedir(),
+      shell: true
     },
     (error, stdout, stderr) => {
       if (error) {
