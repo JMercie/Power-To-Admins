@@ -1,18 +1,16 @@
 import os from 'os';
-import { exec, execSync } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import * as path from 'path';
 
 /**
- * @description -> This class is used to wrap response data to identify wether or not the function succeed.
+ * @description -> This object is used to wrap response data to identify whether or not the function succeed.
  * defaults to unsuccessful operation.
  */
-class Response {
-  constructor(code = -1, status = 'Error', error = true) {
-    this.code = code;
-    this.status = status;
-    this.error = error;
-  }
-}
+const RESPONSE = {
+  code: -1,
+  status: 'Error',
+  error: true
+};
 
 /**
  * @description -> This function is use to create a directory in the users home and initialize a
@@ -22,38 +20,31 @@ class Response {
  * @returns {Response} res -> instance of response object with info about outcome of this function.
  */
 export const initNewRepo = async (projectName, directory) => {
-  const res = new Response();
-  let succeed;
+  const res = RESPONSE;
   directory ??= os.homedir();
 
-  const sfdx_projectCreate = exec(
+  const createSFDX = spawn(
     `sfdx force:project:create -t standard -x -n ${projectName}`,
     {
       cwd: directory,
-      shell: true // this is to spawn .bat or .cmd when running in windows.
+      shell: true,
+      stdio: 'inherit'
     }
   );
-  sfdx_projectCreate.on('exit', (code) => {
-    if (code === 0) succeed = true;
-  });
-
-  const git_init = exec('git init', {
+  const gitInit = spawn('git init', {
     cwd: `${directory}/${projectName}`,
-    shell: true // this is to spawn .bat or .cmd when running in windows.
-  });
-  git_init.on('exit', (code) => {
-    if (code === 0) succeed = true;
-
-    succeed = false;
+    shell: true,
+    stdio: 'inherit'
   });
 
-  // TODO: operation succeed but is not getting into this branch
-  if (succeed) {
-    res.code = 0;
-    res.status = 'Success';
-    res.error = null;
+  if (createSFDX.stderr && gitInit.stderr) {
+    console.error(createSFDX.stderr);
+    return res;
   }
 
+  res.code = 0;
+  res.status = 'Success';
+  res.error = false;
   return res;
 };
 
@@ -80,7 +71,7 @@ export const openExistingSFDXProject = async (name) => {
     `find ${dirName} -name "sfdx-project.json"`,
     (error, stdout, stderr) => {
       if (error) {
-        console.error(`exec error: ${error}`);
+        console.error(`spawn error: ${error}`);
         return;
       }
     }
@@ -111,7 +102,7 @@ export const cloneRepo = async (repoName, directory) => {
     },
     (error, stdout, stderr) => {
       if (error) {
-        console.error(`exec error: ${error}`);
+        console.error(`spawn error: ${error}`);
         return false;
       }
     }
