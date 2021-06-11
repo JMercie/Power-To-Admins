@@ -1,16 +1,6 @@
 import os from 'os';
-import { spawn, execSync } from 'child_process';
+import { execSync } from 'child_process';
 import * as path from 'path';
-
-/**
- * @description -> This object is used to wrap response data to identify whether or not the function succeed.
- * defaults to unsuccessful operation.
- */
-const RESPONSE = {
-  code: -1,
-  status: 'Error',
-  error: true
-};
 
 /**
  * @description -> This function is use to create a directory in the users home and initialize a
@@ -20,41 +10,46 @@ const RESPONSE = {
  * @returns {Response} res -> instance of response object with info about outcome of this function.
  */
 export const initNewRepo = async (projectName, directory) => {
-  const res = RESPONSE;
   directory ??= os.homedir();
 
-  const createSFDX = spawn(
+  execSync(
     `sfdx force:project:create -t standard -x -n ${projectName}`,
     {
       cwd: directory,
       shell: true,
       stdio: 'inherit'
+    },
+    (error, _stdout, stderr) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      if (stderr) {
+        console.error(stderr);
+      }
     }
   );
-  const gitInit = spawn('git init', {
-    cwd: `${directory}/${projectName}`,
-    shell: true,
-    stdio: 'inherit'
-  });
 
-  if (createSFDX.stderr && gitInit.stderr) {
-    console.error(createSFDX.stderr);
-    return res;
-  }
+  execSync(
+    'git init',
+    {
+      cwd: `${directory}/${projectName}`,
+      shell: true,
+      stdio: 'inherit'
+    },
+    (error, _stdout, stderr) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-  res.code = 0;
-  res.status = 'Success';
-  res.error = false;
-  return res;
+      if (stderr) {
+        console.error(stderr);
+      }
+    }
+  );
 };
-
-initNewRepo('test', '/Users/jmercie/dev/github/')
-  .then((res) => {
-    console.log({ res });
-  })
-  .catch((err) => {
-    console.error({ err });
-  });
 
 /**
  * @description This method look recursively around a given path (default is user home directory) and return a list with
@@ -68,10 +63,11 @@ export const openExistingSFDXProject = async (name) => {
 
   // here we look for folders that contains a file with name: sfdx-project.json. Because is mandatory for every local sfdx project.
   const matches = execSync(
-    `find ${dirName} -name "sfdx-project.json"`,
-    (error, stdout, stderr) => {
-      if (error) {
-        console.error(`spawn error: ${error}`);
+    `find ${name} -name "sfdx-project.json"`,
+    (error, _stdout, stderr) => {
+      if (error || stderr) {
+        console.log(`exec error: ${error}`);
+        console.log(stderr);
         return;
       }
     }
@@ -100,15 +96,15 @@ export const cloneRepo = async (repoName, directory) => {
       cwd: directory ? directory : os.homedir(),
       shell: true
     },
-    (error, stdout, stderr) => {
+    (error, _stdout, stderr) => {
       if (error) {
-        console.error(`spawn error: ${error}`);
+        console.error(`exec error: ${error}`);
         return false;
       }
+
+      if (stderr) console.error(stderr);
     }
   );
 
   return true;
 };
-
-//TODO make a response handler to be more DRY.
