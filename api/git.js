@@ -132,6 +132,9 @@ export const addToRepo = async (files, workingDir) => {
     return;
   }
 
-  const { data, error } = await handleSuccess(git.add(files));
-  return data ?? error;
+  // We dont return data here because in a succesfull operation the simpleGit.add() method returns undefined.
+  const { _data, error } = await handleSuccess(git.add(files));
+  if (error) return error;
 };
+
+export const commit = async (message, files = ['']) => {};
