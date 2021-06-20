@@ -7,6 +7,6 @@ export const handleSuccess = async (operation) => {
     return [data, null];
   } catch (error) {
     console.error(error);
-    return [null, error];
+    return [null, error.git.conflicts.length];
   }
 };

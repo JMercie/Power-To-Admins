@@ -137,4 +137,12 @@ export const addToRepo = async (files, workingDir) => {
   if (error) return error;
 };
 
-export const commit = async (message, files = ['']) => {};
+/**
+ * @description commit -> This will commit al staged files in the current working directory.
+ * @param {String} message -> Commit message that the user choose for his commit.
+ * */
+export const commit = async (message) => {
+  message ??= 'Commit message provided by Power-To-Admins';
+  const { data, error } = await handleSuccess(git.commit(message));
+  return data ?? error;
+};
