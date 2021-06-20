@@ -1,6 +1,15 @@
 import os from 'os';
-import { execSync } from 'child_process';
 import * as path from 'path';
+import { execSync } from 'child_process';
+import { handleSuccess } from './git-helper.js';
+import simpleGit from 'simple-git';
+
+const options = {
+  baseDir: process.cwd(),
+  binary: 'git',
+  maxConcurrentProcesses: 6
+};
+const git = simpleGit(options);
 
 /**
  * @description -> This function is use to create a directory in the users home and initialize a
@@ -107,4 +116,33 @@ export const cloneRepo = async (repoName, directory) => {
   );
 
   return true;
+};
+
+/**
+ * @description addToRepo  -> method is used to stage the desire files in order to commit them.
+ * @param {String[]} files -> Is an array of files that we want to stage, if empty all tracked changes are being stage
+ * @param {String} workingDir -> Working directory where we perform this operation.
+ *  This value must be provided by the UI where its controlled in which repository we're working.
+ * @returns Data or Error -> String with info about the running process
+ */
+export const addToRepo = async (files, workingDir) => {
+  files ??= './*';
+  options.baseDir = workingDir ? workingDir : '';
+  if (!options.baseDir) {
+    return;
+  }
+
+  // We dont return data here because in a succesfull operation the simpleGit.add() method returns undefined.
+  const { _data, error } = await handleSuccess(git.add(files));
+  if (error) return error;
+};
+
+/**
+ * @description commit -> This will commit al staged files in the current working directory.
+ * @param {String} message -> Commit message that the user choose for his commit.
+ * */
+export const commit = async (message) => {
+  message ??= 'Commit message provided by Power-To-Admins';
+  const { data, error } = await handleSuccess(git.commit(message));
+  return data ?? error;
 };
