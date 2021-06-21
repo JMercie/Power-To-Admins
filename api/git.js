@@ -1,3 +1,4 @@
+'use strict';
 import os from 'os';
 import * as path from 'path';
 import { execSync } from 'child_process';
@@ -16,6 +17,13 @@ const options = {
   maxConcurrentProcesses: 6
 };
 
+/**
+ * @author JMercie
+ * @date 2021-06-21
+ * @param {Partial<SimpleGitOptions>} options -> Base options for the git binary to run
+ * @returns {SimpleGit} -> Create simpleGit instance.
+ * @LastModifiedDate 2021-06-21
+ */
 const git = simpleGit(options);
 
 /**
@@ -179,15 +187,13 @@ export const commit = async (message) => {
  * @author JMercie
  * @date 2021-06-20
  * @description This function allow to add a remote Repository.
- * @param {String} remoteName -> Name of the remote repository
+ * @param {String} remoteName='origin' -> Name of the remote repository
  * @param {String} remoteRepo -> URL of the remote repository.
- * @returns Data or Error -> String with info about the running process.
- * @LastModifiedDate 2021-06-20.
+ * @returns {String || Buffer} -> String with info about the running process.
+ * @LastModifiedDate 2021-06-21.
  */
 export const addRemote = async (remoteName = 'origin', remoteRepo) => {
-  if (remoteRepo) {
-    return 'No remote URL was provided.';
-  }
+  if (remoteRepo) return 'No remote URL was provided.';
 
   const { data, error } = await handleSuccess(
     git.addRemote(remoteName, remoteRepo)
@@ -195,4 +201,21 @@ export const addRemote = async (remoteName = 'origin', remoteRepo) => {
   return data ?? error;
 };
 
-export const push = async () => {};
+/**
+ * @author JMercie
+ * @date 2021-06-21
+ * @param {String} remoteName='origin' -> Name of the remote repository where we are pushing changes.
+ * @param {String} branch -> Name of the branch in the remote repository
+ * @returns {String || Buffer} -> Returns stdout when successful and a Buffer concatenation between stdout and stderr if fails.
+ * @LastModifiedDate 2021-06-21.
+ */
+export const push = async (remoteName = 'origin', branch) => {
+  if (branch) return;
+
+  const { data, error } = await handleSuccess(git.push(remoteName, branch));
+  return data ?? error;
+};
+
+await push()
+  .then((data) => console.log(data))
+  .catch((err) => console.error(err));
