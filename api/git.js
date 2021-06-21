@@ -215,7 +215,3 @@ export const push = async (remoteName = 'origin', branch) => {
   const { data, error } = await handleSuccess(git.push(remoteName, branch));
   return data ?? error;
 };
-
-await push()
-  .then((data) => console.log({ data }))
-  .catch((err) => console.error({ err }));
