@@ -195,4 +195,21 @@ export const addRemote = async (remoteName = 'origin', remoteRepo) => {
   return data ?? error;
 };
 
-export const push = async () => {};
+/**
+ * @author JMercie
+ * @date 2021-06-21
+ * @param {String} remoteName='origin' -> Name of the remote repository where we are pushing changes.
+ * @param {String} branch -> Name of the branch in the remote repository. This one is mandatory because 
+ * @returns {String || Buffer} -> Returns stdout when successful and a Buffer concatenation between stdout and stderr if fails.
+ * @LastModifiedDate 2021-06-21.
+ */
+export const push = async (remoteName = 'origin', branch) => {
+  if (branch) return '1';
+
+  const { data, error } = await handleSuccess(git.push(remoteName, branch));
+  return data ?? error;
+};
+
+await push()
+  .then((data) => console.log({ data }))
+  .catch((err) => console.error({ err }));

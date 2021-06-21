@@ -7,11 +7,9 @@
  * @LastModifiedDate 2021-06-20
  */
 export const handleSuccess = async (operation) => {
-  try {
-    const data = await operation;
-    return [data, null];
-  } catch (error) {
-    console.error(error);
+  const data = await operation.catch (error => {
+    console.error({error});
     return [null, error];
-  }
+  });
+  return [data, null];
 };
