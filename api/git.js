@@ -204,14 +204,25 @@ export const addRemote = async (remoteName = 'origin', remoteRepo) => {
 /**
  * @author JMercie
  * @date 2021-06-21
+ * @description This allow os to push to a remote repository our local changes.
  * @param {String} remoteName='origin' -> Name of the remote repository where we are pushing changes.
- * @param {String} branch -> Name of the branch in the remote repository. This one is mandatory because 
+ * @param {String} branch -> Name of the branch in the remote repository.
  * @returns {String || Buffer} -> Returns stdout when successful and a Buffer concatenation between stdout and stderr if fails.
  * @LastModifiedDate 2021-06-21.
  */
 export const push = async (remoteName = 'origin', branch) => {
-  if (branch) return;
-
   const { data, error } = await handleSuccess(git.push(remoteName, branch));
   return data ?? error;
+};
+
+/**
+ * @author JMercie
+ * @date 2021-06-21
+ * @description This function allow us to fetch changes of the current remote repository.
+ * @returns {Error || Null}
+ * @LastModifiedDate 2021-06-21.
+ */
+export const fetch = async () => {
+  const { error } = await handleSuccess(git.fetch());
+  return error ?? null;
 };
