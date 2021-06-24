@@ -156,5 +156,3 @@ export const fetch = async () => {
   const { data, error } = await git.fetch(handleSuccess).catch(handleError);
   return data ?? error;
 };
-
-export const pull = async () => {};
