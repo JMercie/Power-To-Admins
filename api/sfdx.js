@@ -13,7 +13,7 @@ import * as path from 'path';
  * @LastModifiedDate 2021-06-21
  */
 export const sf_newProject = async (projectName, directory) => {
-  exec(
+  execSync(
     `sfdx force:project:create -t standard -x -n ${projectName}`,
     {
       cwd: directory,

@@ -10,8 +10,8 @@
  * @LastModifiedDate 2021-06-24
  */
 export const handleSuccess = async (err, taskResult) => {
-  if (err.message || err.git) {
-    return [null, err.message || String(err.git)];
+  if (err) {
+    return [null, err || String(err.git)];
   }
   return [taskResult, null];
 };
