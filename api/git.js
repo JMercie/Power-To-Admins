@@ -142,3 +142,13 @@ export const fetch = async () => {
     .catch(handleError);
   return data ?? error;
 };
+
+export const pull = async (remote = 'origin', branch, pullOptions) => {
+  if (!branch && pullOptions.lenght === 0) {
+    return;
+  }
+  const { data, error } = await simpleGit(OPTIONS)
+    .pull(remote, branch, pullOptions, handleSuccess)
+    .catch(handleError);
+  return data ?? error;
+};
