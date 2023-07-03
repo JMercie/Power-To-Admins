@@ -13,6 +13,7 @@ logs
 # Tooling files
 node_modules
 .yarn/
+.vscode
 
 # Temp directory
 /tmp
@@ -28,3 +29,6 @@ Thumbs.db
 ehthumbs.db
 [Dd]esktop.ini
 $RECYCLE.BIN/
+
+# Enviroment var
+.env
